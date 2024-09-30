@@ -1,0 +1,27 @@
+%MATLAB code for dilation,erosion,opening and closing of image
+clc;
+clear all;
+close all;
+
+f = [0 0 0 0 0 0 0;
+     0 0 0 0 0 0 0;
+     0 0 1 1 1 0 0;
+     0 0 1 1 1 0 0;
+     0 0 1 1 1 0 0;
+     0 0 0 0 0 0 0;
+     0 0 0 0 0 0 0];
+
+subplot(2,3,1);
+imshow(f);
+title('Original image');
+
+[x,y] = size(f);
+
+w = [1 1 1; 
+     1 1 1; 
+     1 1 1];
+
+p = mydilation(f, w, x, y);
+subplot(2,3,2);
+imshow(p);
+title('Dilated image');

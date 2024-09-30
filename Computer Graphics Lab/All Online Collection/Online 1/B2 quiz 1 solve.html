@@ -1,0 +1,130 @@
+<!-- saved from url=(0065)http://math.hws.edu/graphicsbook/source/webgl/simple-texture.html -->
+<!-- modified by Mohammad Imrul Jubair -->
+
+<html>
+<title>LAB-1: Intro</title>
+<canvas id="webglcanvas" width="500" height="500"></canvas>
+
+<script>
+
+    var canvas = document.getElementById("webglcanvas"); 
+	//webglcanvas is an object    
+	//canvas gives us webgl functions
+	
+	var  gl = canvas.getContext("webgl");
+	//gl is works like aliasing, this is webgl's context.
+	//webgl is an api, we can those methods using gl
+	
+    
+	 
+    var vertexShaderSource =
+       `attribute vec3 a_coords;
+        void main() {
+            gl_Position = vec4(a_coords, 1.0);
+			gl_PointSize = 11.0;
+        }`;
+		
+//1.0 implies normal
+
+//inside the ` ` are shader language.  Here, we are rendering 3d object. so vec3. 
+// vec4, we are adding a value 1, we will see why we use it later.
+
+//gl_position = contains output of vertext shader, gl_Position is 
+
+//attribute works with vertexes. When we work with vertext, we use attribute
+//it keeps values for different vertexes
+
+
+    var fragmentShaderSource =
+       `void main() {
+            gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+        }`;
+		
+	//when we color sth, the vetex it doesn't gets colored. We can color interpolation of shapes.
+	//we can't color the vertex itself. 
+	// FRAGMENT_SHADER does the coloring. We define color through it.
+	//this is run on gpu as there is color rendering
+		
+		
+    
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh, vertexShaderSource );
+    gl.compileShader( vsh );
+	//compiled vertex shader
+	
+	
+
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh, fragmentShaderSource );
+    gl.compileShader( fsh );
+	//also has to compile fragment shader
+
+
+    var prog = gl.createProgram();  //create a program
+    
+    gl.attachShader( prog, vsh );  //attaching vertex shader to program
+    gl.attachShader( prog, fsh ); //attaching fragment shader to program
+    gl.linkProgram( prog );   // links to pc.
+    gl.useProgram(prog);  //notifies pc that program is usable
+	//we can have multiple programs as well
+	
+	
+
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords"); 
+	//a_coords_location this is cpu version of a_coords.
+	//here, a_coords which is in gpu, it gets linked to cpu
+	
+	
+
+
+    var coords = new Float32Array([0.0, 0.0, 0.0,
+									0.0, 0.5, 0.0,
+									0.5, 0.0, 0.0,
+									
+									0.5, 0.0, 0.0,
+									0.0, 0.5, 0.0,
+									0.5, 0.5, 0.0									
+									
+									
+									]);
+									//v0, v1, v2
+									//this works be 3 coordinates each time. (accesses 3 coordinates a a time)
+									//access is row after row
+						
+
+    var a_coords_buffer = gl.createBuffer(); 
+	//from cpu's memory, gpu can't take values.
+	//so veretx buffer is a memory, from which gpu can read the values.
+	//from cpu, vertex buffer brings values. TO create that this vertex buffer object do createBuffer();
+	
+	
+	
+	
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); //sees //opens buffer 
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW); // a_coords had coordinates defined, we will store it now in VBOs
+    gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); //VBOs doesn't know a_coords is 3d data, so pass parameter 3
+	//gl.FLOAT means that the coordinates are of float type
+	
+    gl.enableVertexAttribArray(a_coords_location); //this line enables gpu, so far gpu didn't do anything. 
+	// now gpu can access data
+	
+    gl.clearColor(0.0, 0.0, 0.0, 1.0);
+	
+    gl.clear(gl.COLOR_BUFFER_BIT);
+	//clears color memory if anything already exists for that pixel
+	
+	gl.drawArrays(gl.TRIANGLES, 0, 6);
+	gl.drawArrays(gl.POINTS, 0, 6);
+	
+	//start vertex is 0
+		//have 3 vertextes
+	//so goes from 0 to 2 // this is controlling number of vertex
+	
+	//can use Gl.line
+	
+	//change values and experiemnt with the code
+
+</script>
+
+</html>

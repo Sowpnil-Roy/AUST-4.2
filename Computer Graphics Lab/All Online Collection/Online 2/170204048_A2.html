@@ -1,0 +1,88 @@
+<html>
+<title>Offline1</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=SkM2UTpQcYYsKo-gO_04-Ut9TXNElS7L8l0h7a1I9vUVvPP95qjNa2DIXYIld1QzYmbzTfrEekOmt9kYR262X6QzceWla6CBFg6XUitjamahY_MPQ5PHTIAkGuXJWOG_5qc8FPj0w08REVBPVHKx-g1yTZSklbOacZBVqLAXZx2h6JVm72kNjP9ZkTo59Ck_AL2pXWgyFoPymfK1RxP-1iVT-OArAo52EnsZAoMqyASjVBQzlo5ih63GPuMBbZ4gETKx79_AYxQbJVmAy3oJMRrPQ5-jrNVg8qsJINXQcTWN-AVLzpvoTzGOeBCV4YRFby7FiNJQSjdOkK5ChB0wqDe9EndrFBktm-GXSM4gXv6l6UJUXUjVhZll7a3vAWNcDzXKPjtQFEoeC6yNDTqDJXz4H4NrANi36R54RZfDSacdyNqevDGaIEmwQqjpqBwRKvHLMgx8NK6DF46crZvoUA" charset="UTF-8">
+</script>
+<canvas id="webglcanvas" width="500" height="500"></canvas>
+<script>
+var canvas = document.getElementById("webglcanvas"); 
+var  gl = canvas.getContext("webgl");
+
+gl.clearColor(0, 0, 1, 1.0);
+gl.clear(gl.COLOR_BUFFER_BIT);
+
+var vertexShaderSource =    
+       `attribute vec3 a_coords;  
+        void main() {
+            gl_Position = vec4(a_coords, 1.0);
+        }`;
+var vertexShaderSource2 =    
+       `attribute vec3 a_coords2;  
+        void main() {
+            gl_Position = vec4(a_coords2, 1.0);
+        }`;
+
+
+    var fragmentShaderSource =
+       `void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        }`;
+	var fragmentShaderSource2 =
+       `void main() {
+            gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+        }`;
+    
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh, vertexShaderSource );
+    gl.compileShader( vsh );
+	
+	var vsh2 = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh2, vertexShaderSource2 );
+    gl.compileShader( vsh2 );
+
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh, fragmentShaderSource );
+    gl.compileShader( fsh );
+	
+	var fsh2 = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh2, fragmentShaderSource2 );
+    gl.compileShader( fsh2 );
+    
+    var prog = gl.createProgram(); 
+    
+    gl.attachShader( prog, vsh ); 
+    gl.attachShader( prog, fsh );
+	
+	gl.attachShader( prog, vsh2 ); 
+    gl.attachShader( prog, fsh2 );
+	
+    gl.linkProgram( prog ); 
+    gl.useProgram(prog); 
+
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords"); 
+	var a_coords_location2 = gl.getAttribLocation(prog, "a_coords2"); 
+
+    var coords = new Float32Array( [0.35, -0.25, 0.0,
+									-0.55, -0.25, 0.0,
+									-0.35, 0.25, 0.0] );
+	
+	var coords2 = new Float32Array( [-0.35, 0.25, 0.0,
+									0.55, 0.25, 0.0,
+									0.35, -0.25, 0.0] );
+
+    var a_coords_buffer = gl.createBuffer(); 
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW); 
+    gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); 
+    gl.enableVertexAttribArray(a_coords_location);  
+
+	gl.drawArrays(gl.TRIANGLES, 0, 3); 
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, coords2, gl.STATIC_DRAW); 
+    gl.vertexAttribPointer(a_coords_location2, 3, gl.FLOAT, false, 0, 0); 
+    gl.enableVertexAttribArray(a_coords_location2);  
+
+	gl.drawArrays(gl.TRIANGLES, 0, 3); 
+
+</script>

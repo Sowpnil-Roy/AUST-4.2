@@ -1,0 +1,286 @@
+import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
+
+let scene, camera, renderer, controls;
+let sky, sun, moon;
+let sunLight, moonLight;
+let dayTime = 0;
+let ground;
+
+function init() {
+    scene = new THREE.Scene();
+    camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    camera.position.set(200, 100, 200);
+    camera.lookAt(0, 0, 0);
+
+    controls = new OrbitControls(camera, renderer.domElement);
+
+    createLights();
+    createSky();
+    createSunAndMoon();
+
+    createFlatGround();
+    createRiver();
+    createDuplexCastle();
+    createSurroundingWall();
+    createDrawbridge();
+    createCastleDoor();
+    createRoad();
+    createTrees();
+
+    animate();
+}
+
+function createLights() {
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    scene.add(ambientLight);
+
+    sunLight = new THREE.DirectionalLight(0xffffaa, 1);
+    moonLight = new THREE.DirectionalLight(0x4444ff, 0.5);
+    scene.add(sunLight, moonLight);
+}
+
+function createSky() {
+    const skyGeometry = new THREE.SphereGeometry(500, 32, 32);
+    const skyMaterial = new THREE.MeshBasicMaterial({ side: THREE.BackSide });
+    sky = new THREE.Mesh(skyGeometry, skyMaterial);
+    scene.add(sky);
+}
+
+function createSunAndMoon() {
+    const sunGeometry = new THREE.SphereGeometry(10, 32, 32);
+    const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    scene.add(sun);
+
+    const moonGeometry = new THREE.SphereGeometry(5, 32, 32);
+    const moonMaterial = new THREE.MeshBasicMaterial({ color: 0xcccccc });
+    moon = new THREE.Mesh(moonGeometry, moonMaterial);
+    scene.add(moon);
+}
+
+function createFlatGround() {
+    const groundSize = 1000;
+    const groundGeometry = new THREE.PlaneGeometry(groundSize, groundSize);
+    const groundMaterial = new THREE.MeshStandardMaterial({ color: 0x3a9d23 });
+    ground = new THREE.Mesh(groundGeometry, groundMaterial);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.1;
+    scene.add(ground);
+}
+
+function createRiver() {
+    const riverWidth = 40;
+    const riverDepth = 5;
+    const innerSize = 240;
+    const outerSize = innerSize + riverWidth * 2;
+
+    const riverShape = new THREE.Shape();
+    riverShape.moveTo(-outerSize / 2, -outerSize / 2);
+    riverShape.lineTo(outerSize / 2, -outerSize / 2);
+    riverShape.lineTo(outerSize / 2, outerSize / 2);
+    riverShape.lineTo(-outerSize / 2, outerSize / 2);
+    riverShape.lineTo(-outerSize / 2, -outerSize / 2);
+
+    const holeShape = new THREE.Shape();
+    holeShape.moveTo(-innerSize / 2, -innerSize / 2);
+    holeShape.lineTo(innerSize / 2, -innerSize / 2);
+    holeShape.lineTo(innerSize / 2, innerSize / 2);
+    holeShape.lineTo(-innerSize / 2, innerSize / 2);
+    holeShape.lineTo(-innerSize / 2, -innerSize / 2);
+
+    riverShape.holes.push(holeShape);
+
+    const riverGeometry = new THREE.ExtrudeGeometry(riverShape, {
+        depth: riverDepth,
+        bevelEnabled: false
+    });
+
+    const riverMaterial = new THREE.MeshStandardMaterial({ color: 0x4444ff });
+    const river = new THREE.Mesh(riverGeometry, riverMaterial);
+    river.rotation.x = -Math.PI / 2;
+    river.position.y = -riverDepth + 0.1;
+
+    scene.add(river);
+}
+
+function createDuplexCastle() {
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe6d0b3 });
+
+    // Ground level
+    createWall(120, 30, 80, 0, 15, 0);
+    createWall(40, 30, 40, -80, 15, 0);
+    createWall(40, 30, 40, 80, 15, 0);
+    createTower(-80, 15, 40);
+    createTower(80, 15, 40);
+
+    // Upper level
+    createWall(80, 30, 40, 0, 45, 0);
+    createTower(0, 45, -30);
+}
+
+function createWall(width, height, depth, x, y, z) {
+    const wallGeometry = new THREE.BoxGeometry(width, height, depth);
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0xe6d0b3 });
+    const wall = new THREE.Mesh(wallGeometry, wallMaterial);
+    wall.position.set(x, y, z);
+    scene.add(wall);
+    addCrenellations(wall, width, depth);
+}
+
+function createTower(x, y, z) {
+    const towerGeometry = new THREE.CylinderGeometry(15, 15, 60, 32);
+    const towerMaterial = new THREE.MeshStandardMaterial({ color: 0xe6d0b3 });
+    const tower = new THREE.Mesh(towerGeometry, towerMaterial);
+    tower.position.set(x, y + 30, z);
+    scene.add(tower);
+    addCrenellations(tower, 30, 30, true);
+}
+
+function createSurroundingWall() {
+    const wallSize = 220;
+
+    // Front wall
+    createWall(wallSize, 30, 10, 0, 15, wallSize / 2);
+
+    // Back wall
+    createWall(wallSize, 30, 10, 0, 15, -wallSize / 2);
+
+    // Left wall
+    createWall(10, 30, wallSize, -wallSize / 2, 15, 0);
+
+    // Right wall
+    createWall(10, 30, wallSize, wallSize / 2, 15, 0);
+}
+
+function createDrawbridge() {
+    const bridgeGeometry = new THREE.BoxGeometry(40, 4, 60);
+    const bridgeMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const bridge = new THREE.Mesh(bridgeGeometry, bridgeMaterial);
+    bridge.position.set(0, 2, 110); // Positioned in front of the wall
+    scene.add(bridge);
+
+    // Drawbridge towers
+    createWall(20, 40, 20, -30, 20, 90);
+    createWall(20, 40, 20, 30, 20, 90);
+}
+
+function createCastleDoor() {
+    const doorWidth = 30;
+    const doorHeight = 24;
+    const doorDepth = 4;
+
+    const doorGeometry = new THREE.BoxGeometry(doorWidth, doorHeight, doorDepth);
+    const doorMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const door = new THREE.Mesh(doorGeometry, doorMaterial);
+    door.position.set(0, doorHeight / 2, 95); // Position adjusted to be in line with the drawbridge
+    scene.add(door);
+
+    // Add door frame
+    const frameWidth = 2;
+    const frameGeometry = new THREE.BoxGeometry(doorWidth + frameWidth * 2, doorHeight + frameWidth, doorDepth + 2);
+    const frameMaterial = new THREE.MeshStandardMaterial({ color: 0x5c3a21 });
+    const frame = new THREE.Mesh(frameGeometry, frameMaterial);
+    frame.position.set(0, doorHeight / 2, 94); // Adjusted to be behind the door
+    scene.add(frame);
+
+    // Add door handle
+    const handleGeometry = new THREE.CylinderGeometry(1, 1, 6, 8);
+    const handleMaterial = new THREE.MeshStandardMaterial({ color: 0xd4af37 });
+    const handle = new THREE.Mesh(handleGeometry, handleMaterial);
+    handle.rotation.z = Math.PI / 2;
+    handle.position.set(10, doorHeight / 2, 96); // Positioned on the front of the door
+    scene.add(handle);
+}
+
+function createRoad() {
+    const roadWidth = 40;
+    const roadLength = 120;
+    const roadGeometry = new THREE.PlaneGeometry(roadWidth, roadLength);
+    const roadMaterial = new THREE.MeshStandardMaterial({ color: 0x8B4513 });
+    const road = new THREE.Mesh(roadGeometry, roadMaterial);
+    road.rotation.x = -Math.PI / 2;
+    road.position.set(0, 0.1, 160); // Positioned in front of the drawbridge
+    scene.add(road);
+}
+
+function addCrenellations(parent, width, depth, isCircular = false) {
+    const crenellationGeometry = new THREE.BoxGeometry(4, 4, 4);
+    const crenellationMaterial = new THREE.MeshStandardMaterial({ color: 0xc19a6b });
+
+    const count = isCircular ? 16 : Math.floor(width / 8);
+    for (let i = 0; i < count; i++) {
+        const crenellation = new THREE.Mesh(crenellationGeometry, crenellationMaterial);
+        if (isCircular) {
+            const angle = (i / count) * Math.PI * 2;
+            crenellation.position.set(
+                Math.cos(angle) * (width / 2),
+                parent.geometry.parameters.height / 2 + 2,
+                Math.sin(angle) * (depth / 2)
+            );
+        } else {
+            crenellation.position.set(
+                (i - count / 2) * 8 + 4,
+                parent.geometry.parameters.height / 2 + 2,
+                depth / 2
+            );
+        }
+        parent.add(crenellation);
+    }
+}
+
+function createTrees() {
+    const treeCount = 50;
+    for (let i = 0; i < treeCount; i++) {
+        createTree(
+            Math.random() * 800 - 400,
+            Math.random() * 800 - 400
+        );
+    }
+}
+
+function createTree(x, z) {
+    const trunkGeometry = new THREE.CylinderGeometry(1, 1, 20, 8);
+    const trunkMaterial = new THREE.MeshStandardMaterial({ color: 0x8b4513 });
+    const trunk = new THREE.Mesh(trunkGeometry, trunkMaterial);
+    trunk.position.set(x, 10, z);
+    scene.add(trunk);
+
+    const foliageGeometry = new THREE.SphereGeometry(10, 8, 8);
+    const foliageMaterial = new THREE.MeshStandardMaterial({ color: 0x228b22 });
+    const foliage = new THREE.Mesh(foliageGeometry, foliageMaterial);
+    foliage.position.set(x, 25, z);
+    scene.add(foliage);
+}
+
+function animate() {
+    requestAnimationFrame(animate);
+    dayTime += 0.001;
+    if (dayTime >= 1) dayTime = 0;
+
+    const sunPos = getCircularPosition(200, dayTime);
+    const moonPos = getCircularPosition(200, dayTime + 0.5);
+
+    sun.position.set(sunPos.x, sunPos.y, sunPos.z);
+    moon.position.set(moonPos.x, moonPos.y, moonPos.z);
+
+    sunLight.position.set(sunPos.x, sunPos.y, sunPos.z);
+    moonLight.position.set(moonPos.x, moonPos.y, moonPos.z);
+
+    renderer.render(scene, camera);
+}
+
+function getCircularPosition(radius, phase) {
+    const angle = phase * Math.PI * 2;
+    return {
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        z: 0
+    };
+}
+
+init();

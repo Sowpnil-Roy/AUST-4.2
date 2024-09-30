@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<title>Assignment 2 Part B</title>
+
+<canvas id="webgl_canvas" width="800" height="600"></canvas>
+
+<script>
+    // Getting Canvas and WebGL Rendering Context
+    var canvas = document.getElementById("webgl_canvas");
+    var gl = canvas.getContext("webgl");
+
+    // Creating Vertex Shader
+    var vertexShaderSource =
+        `attribute vec3 a_coords;
+        attribute vec3 a_colors;
+        varying vec3 v_color;
+        uniform float u_shift;
+
+        void main() {
+            if(u_shift < 1.8 && u_shift > -1.8) {
+                gl_Position = vec4(a_coords.x + u_shift, a_coords.y, a_coords.z, 1.0);
+            } else {
+                gl_Position = vec4(a_coords.x, a_coords.y, a_coords.z, 1.0);
+            }
+
+            v_color = a_colors;
+        }`;
+
+    var vsh = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vsh, vertexShaderSource);
+    gl.compileShader(vsh);
+
+    // Creating Fragment Shader
+    var fragmentShaderSource =
+        `precision mediump float;
+        varying vec3 v_color;
+
+        void main() {
+            gl_FragColor = vec4(v_color, 1.0);
+        }`;
+
+    var fsh = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fsh, fragmentShaderSource);
+    gl.compileShader(fsh);
+
+    // Creating a combined shader program object
+    var prog = gl.createProgram();
+
+    // Attaching shaders
+    gl.attachShader(prog, vsh);
+    gl.attachShader(prog, fsh);
+
+    // Linking the shaders
+    gl.linkProgram(prog);
+
+    // Using shader program
+    gl.useProgram(prog);
+
+    // Defining variables
+    var shift = 0.0;
+
+    // Drawing design
+    var points = [];
+    var temp1 = 0;
+    var temp2 = 0;
+    var step = 0.1;
+
+    var rgb_colors = []
+
+    for (var i = 0; i < 8; i++) {
+        // For left points
+        var a1x = temp1;
+        var b1x = temp1 + (-step / 2);
+        var c1x = temp1 - step;
+
+        var a1y = 0;
+        var b1y = step;
+        var c1y = 0;
+
+        if (i % 2 === 0) {
+            b1y *= -1;
+        }
+
+        temp1 = c1x;
+
+        // For right points
+        var a2x = temp2;
+        var b2x = temp2 + (step / 2);
+        var c2x = temp2 + step;
+
+        var a2y = 0;
+        var b2y = step;
+        var c2y = 0;
+
+        if (i % 2 !== 0) {
+            b2y *= -1;
+        }
+
+        temp2 = c2x;
+
+        // Adding points to list
+        points.push(a1x, a1y, b1x, b1y, c1x, c1y);
+        points.push(a2x, a2y, b2x, b2y, c2x, c2y);
+
+        // Adding colors
+        rgb_colors.push(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+        rgb_colors.push(0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0);
+    }
+
+    var coords = new Float32Array(points);
+
+    var colors = new Float32Array(rgb_colors);
+
+    // Getting attribute locations
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+
+    var a_coords_buffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(a_coords_location, 2, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_coords_location);
+
+    var a_colors_location = gl.getAttribLocation(prog, "a_colors");
+
+    var a_colors_buffer = gl.createBuffer();
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_colors_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(a_colors_location, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_colors_location);
+
+    // Getting uniform locations
+    var u_shift_location = gl.getUniformLocation(prog, "u_shift");
+    gl.uniform1f(u_shift_location, shift);
+
+    // Clearing background and resetting color buffer
+    gl.clearColor(.98, 0.98, 0.98, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
+    // Drawing the primitive
+    gl.drawArrays(gl.TRIANGLES, 0, points.length / 2);
+
+    // Handling keyboard events
+    document.onkeyup = function (event) {
+        switch (event.key) {
+            case 'ArrowLeft':
+                // Shifting design left
+                shift -= 0.1;
+                gl.uniform1f(u_shift_location, shift);
+                break;
+            case 'ArrowRight':
+                // Shifting design right
+                shift += 0.1;
+                gl.uniform1f(u_shift_location, shift);
+                break;
+        }
+
+        // Clearing background and resetting color buffer
+        gl.clearColor(0, 0, 0, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+
+        // Drawing the primitive
+        gl.drawArrays(gl.TRIANGLES, 0, points.length / 2);
+    };
+
+</script>
+
+</html>

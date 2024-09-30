@@ -1,0 +1,88 @@
+<!-- Online 2: F32-->
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LAB-2: Mouse Shift</title>
+    <canvas id="webglcanvas" width="500" height="500"></canvas>
+</head>
+<body>
+    <script>
+        var canvas = document.getElementById("webglcanvas");
+        var gl = canvas.getContext("webgl");
+
+        var vertexShaderSource =
+            `attribute vec3 a_coords;
+            void main() {
+                gl_Position = vec4(a_coords, 1.0);
+            }`;
+
+        var fragmentShaderSource =
+            `precision mediump float;
+            uniform float yScale;
+
+            void main() {
+                gl_FragColor = vec4(rand(), rand(), rand(), 1.0);
+                gl_FragColor.a = 1.0;
+
+                // Scale along the y-axis by multiplying with yScale
+                gl_FragCoord.y *= yScale;
+            }
+
+            float rand() {
+                return fract(sin(gl_FragCoord.x * 12.9898 + gl_FragCoord.y * 78.233) * 43758.5453);
+            }`;
+
+        var vsh = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vsh, vertexShaderSource);
+        gl.compileShader(vsh);
+
+        var fsh = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fsh, fragmentShaderSource);
+        gl.compileShader(fsh);
+
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vsh);
+        gl.attachShader(prog, fsh);
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+
+        var coords = new Float32Array([
+            -0.5, -0.5, 0.0,
+            0.5, -0.5, 0.0,
+            -0.5, 0.5, 0.0,
+
+            0.5, -0.5, 0.0,
+            0.5, 0.5, 0.0,
+            -0.5, 0.5, 0.0
+        ]);
+
+        var a_coords_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);
+        gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_coords_location);
+
+        var yScale = 1.0; // Initial scale along y-axis
+
+        // Get the location of the uniform variable yScale in the shader
+        var yScaleLocation = gl.getUniformLocation(prog, "yScale");
+
+        canvas.addEventListener("mousedown", function () {
+            // Increase the size along the y-axis by a value on each click
+            yScale += 0.1;
+
+            // Pass the updated scale value to the shader
+            gl.uniform1f(yScaleLocation, yScale);
+
+            // Clear canvas and draw the square
+            gl.clearColor(Math.random(), Math.random(), Math.random(), 1.0); // Change color randomly
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.drawArrays(gl.TRIANGLES, 0, 6); // Draw the square
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+1. https://www.nzfaruqui.com/contrast-stretching-in-image-processing-using-matlab/
+2. https://www.mathworks.com/matlabcentral/fileexchange/48845-contrast-stretching
+3. https://homepages.inf.ed.ac.uk/rbf/HIPR2/stretch.htm
+
+
+
+https://www.tutorialspoint.com/dip/histogram_equalization.htm

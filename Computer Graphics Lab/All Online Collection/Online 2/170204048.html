@@ -1,0 +1,244 @@
+<!-- saved from url=(0065)http://math.hws.edu/graphicsbook/source/webgl/simple-texture.html -->
+<!-- modified by Mohammad Imrul Jubair -->
+
+<!DOCTYPE html>
+<title>LAB-3: Index </title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=VkUmjXUfqOd1yKpjQjKsAEWaFmEP13LEZlHU6nAZeBSRewRB48M7ZVCNOhorVoEnZv9dpVYmfoDorhUwIAVNJZTteUtTQfbkeEp3tue219b1NaGEBU6iMt3HVnAAoR_XG5eHK6Y7ry6TBdktZSvyFzXLYUV-8NRiBNSjBgW-uUS-0sOHkA2c8N_kH-tVpaP_fJlYrI7xotXc658ry7VvOdZmhWc_GEF9H7j-7_ih843YsW1jPBdCxB-2QCPKDjM320Z8yRqHVDFRNpPojjajYCSOxatk0EbSmxDYOZCEekRxJk7oqtAS7cEzxAFwYZ_udpa28tBs-PcbXkKO_22PEA" charset="UTF-8"></script><canvas id="webglcanvas" width="500" height="500"></canvas>
+
+<script>
+
+    var canvas = document.getElementById("webglcanvas"); 
+    var  gl = canvas.getContext("webgl");
+
+    var vertexShaderSource =
+       `attribute vec3 a_coords;
+	    attribute vec3 a_colors;
+		uniform mat4 u_Scale;
+		uniform mat4 u_RotX;
+		uniform mat4 u_RotY;
+		varying vec3 v_color;
+		uniform float u_shift;
+        
+		void main() {
+	     	gl_Position = u_Scale*u_RotX*u_RotY*vec4(a_coords, 1.0);	
+            if (u_shift <0.7 )
+				v_color = a_colors;
+			else
+				v_color = a_colors-a_colors;	
+        }`;
+
+	var fragmentShaderSource =
+       `precision mediump float;
+        varying vec3 v_color;
+        void main() {
+            gl_FragColor = vec4(v_color, 1.0);
+        }`;
+
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh, vertexShaderSource );
+    gl.compileShader( vsh );
+	
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh, fragmentShaderSource );
+    gl.compileShader( fsh );
+    
+    var prog = gl.createProgram(); 
+    
+    gl.attachShader( prog, vsh ); 
+    gl.attachShader( prog, fsh );
+    gl.linkProgram( prog ); 
+    gl.useProgram(prog); 
+	
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+
+    var coords = new Float32Array( [
+									   // Front face
+								       0.0, 0.75,  0.75,    
+								       0.5, 0.0,  0.5,
+								      -0.5,  0.0,  0.5,
+									  
+									 
+								      // Back face
+								      0.0, 0.75,  0.75,
+								       0.5, 0.0,  -0.5,
+								      -0.5,  0.0,  -0.5,
+
+
+								      // Right face
+									   0.0, 0.75,  0.75, 
+								       0.5, 0.0,  0.5,
+								       0.5, 0.0,  -0.5,
+
+								      // Left face
+									  0.0, 0.75,  0.75,
+								      -0.5, 0.0,  0.5,
+								      -0.5,  0.0,  -0.5
+									  
+									] );
+	
+    var a_coords_buffer = gl.createBuffer(); 
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW); 
+    gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); 
+    gl.enableVertexAttribArray(a_coords_location);
+	
+	
+	var a_colors_location = gl.getAttribLocation(prog, "a_colors");
+    var colors = new Float32Array( [
+	                                0.0, 1.0, 0.0,
+									0.0, 1.0, 0.0,
+									0.0, 1.0, 0.0,
+									
+									1.0, 0.0, 0.0,
+									1.0, 0.0, 0.0,
+									1.0, 0.0, 0.0,
+									
+									0.0, 0.0, 1.0,
+									0.0, 0.0, 1.0,
+									0.0, 0.0, 1.0,
+									
+									0.0, 0.9, 0.9,
+									0.0, 0.9, 0.9,
+									0.0, 0.9, 0.9,
+								
+									] );
+	
+	var a_colors_buffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_colors_buffer);
+    gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+    gl.vertexAttribPointer(a_colors_location, 3, gl.FLOAT, false, 0, 0);
+    gl.enableVertexAttribArray(a_colors_location);	
+	
+	var indices = new Uint8Array([
+									0, 1, 2,
+                                    3, 4, 5,
+									6, 7, 8,
+									9, 10, 11,
+									
+								]);
+	var bufferInd = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, bufferInd);
+    gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, indices, gl.STATIC_DRAW);
+	
+	var u_rotateX_location = gl.getUniformLocation(prog, "u_RotX");
+	var thetaX = 0;
+	var rad = thetaX*Math.PI/180;
+    var rotateXMatrix = new Float32Array( [1.0,  0.0,            0.0,            0.0,
+                                      	   0.0,  Math.cos(rad),  Math.sin(rad),  0.0,
+                                     	   0.0, -Math.sin(rad),  Math.cos(rad),  0.0,
+                                      	   0.0,  0.0,            0.0,            1.0] );
+	gl.uniformMatrix4fv(u_rotateX_location, false, rotateXMatrix);
+	
+	var u_rotateY_location = gl.getUniformLocation(prog, "u_RotY");
+	var thetaY = -20;
+	var rad = thetaY*Math.PI/180;
+    var rotateYMatrix = new Float32Array( [Math.cos(rad),  0.0,  -Math.sin(rad),  0.0,
+										   0.0,            1.0,   0.0,            0.0,
+                                           Math.sin(rad),  0.0,   Math.cos(rad),  0.0,
+                                      	   0.0,            0.0,   0.0,            1.0] );
+	
+	gl.uniformMatrix4fv(u_rotateY_location, false, rotateYMatrix);
+	
+	
+	u_scale_location = gl.getUniformLocation(prog, "u_Scale");
+	var Sx = 1.0;
+	var Sy = 1.0;
+	var Sz = 1.0;
+	var scaleMatrix = new Float32Array( [Sx,   0.0,  0.0,  0.0,
+                                      	 0.0,  Sy,   0.0,  0.0,
+                                     	 0.0,  0.0,  Sz,   0.0,
+                                      	 0.0,  0.0,  0.0,  1.0] );
+										
+	gl.uniformMatrix4fv(u_scale_location, false, scaleMatrix);
+	
+	var u_shift_location = gl.getUniformLocation(prog, "u_shift");
+	var shift = 0.8;
+	gl.uniform1f(u_shift_location, shift);
+	
+	gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    //gl.enable(gl.DEPTH_TEST);
+    //gl.enable(gl.CULL_FACE);
+	//gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, 0);
+		
+	Sx = 0.97;
+	Sy = 0.97;
+	Sz = 0.97;
+	scaleMatrix = new Float32Array( [Sx,   0.0,  0.0,  0.0,
+                                    0.0,  Sy,   0.0,  0.0,
+                                    0.0,  0.0,  Sz,   0.0,
+                                    0.0,  0.0,  0.0,  1.0] );
+										 
+	shift = 0.0;
+	gl.uniform1f(u_shift_location, shift);
+	gl.uniformMatrix4fv(u_scale_location, false, scaleMatrix);
+	
+	//gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    gl.enable(gl.DEPTH_TEST);
+    //gl.enable(gl.CULL_FACE);
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, 0);
+	
+	document.onkeyup = function (event) {
+	switch (event.key) {
+        case 'ArrowLeft':
+            thetaY = thetaY - 5;
+	        var rad = thetaY*Math.PI/180;
+            var rotateYMatrix = new Float32Array( [Math.cos(rad),  0.0,  -Math.sin(rad),  0.0,
+										   0.0,            1.0,   0.0,            0.0,
+                                           Math.sin(rad),  0.0,   Math.cos(rad),  0.0,
+                                      	   0.0,            0.0,   0.0,            1.0] );
+            gl.uniformMatrix4fv(u_rotateY_location, false, rotateYMatrix);
+            break;
+        
+		case 'ArrowRight':
+            thetaX = thetaX - 1;
+	        var rad = thetaX*Math.PI/180;
+            var rotateXMatrix = new Float32Array( [1.0,  0.0,            0.0,            0.0,
+                                      	   0.0,  Math.cos(rad),  Math.sin(rad),  0.0,
+                                     	   0.0, -Math.sin(rad),  Math.cos(rad),  0.0,
+                                      	   0.0,  0.0,            0.0,            1.0] );
+	        gl.uniformMatrix4fv(u_rotateX_location, false, rotateXMatrix);
+			break;
+		
+		case 'ArrowUp':
+		    Sx = Sx+0.10;
+	        Sy = Sy+0.10;
+	        Sz = Sz+0.10;
+	        scaleMatrix = new Float32Array( [Sx,   0.0,  0.0,  0.0,
+                                      	 0.0,  Sy,   0.0,  0.0,
+                                     	 0.0,  0.0,  Sz,   0.0,
+                                      	 0.0,  0.0,  0.0,  1.0] );
+										 
+	        gl.uniformMatrix4fv(u_scale_location, false, scaleMatrix);
+            
+			break;
+		
+		case 'ArrowDown':
+		    Sx = Sx-0.10;
+	        Sy = Sy-0.10;
+	        Sz = Sz-0.10;
+	        scaleMatrix = new Float32Array( [Sx,   0.0,  0.0,  0.0,
+                                      	 0.0,  Sy,   0.0,  0.0,
+                                     	 0.0,  0.0,  Sz,   0.0,
+                                      	 0.0,  0.0,  0.0,  1.0] );
+										 
+	        gl.uniformMatrix4fv(u_scale_location, false, scaleMatrix);
+            
+			break;
+        }
+	    //gl.clearColor(1.0, 1.0, 1.0, 1.0);
+        gl.enable(gl.DEPTH_TEST);
+        //gl.enable(gl.CULL_FACE);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	    gl.drawElements(gl.TRIANGLES, 12, gl.UNSIGNED_BYTE, 0);
+	
+	};
+	
+
+
+</script>
+
+
+
+</html>

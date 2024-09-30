@@ -1,0 +1,12 @@
+function img = mydilation(f, w, x, y)
+
+p = zeros(x,y);
+for s=2:x-1
+    for t=2:y-1
+        w1=[f(s-1,t-1)*w(1) f(s-1,t)*w(2) f(s-1,t+1)*w(3) f(s,t-1)*w(4) f(s,t)*w(5) f(s,t+1)*w(6) f(s+1,t-1)*w(7) f(s+1,t)*w(8) f(s+1,t+1)*w(9)];
+        p(s,t)=max(w1);
+    end
+end
+img = p;
+
+end

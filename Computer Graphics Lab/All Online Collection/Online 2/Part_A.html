@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment - 01</title>
+</head>
+<body>
+    <canvas id="webglcanvas" width="600" height="600"></canvas>
+
+    <script>
+        var canvas = document.getElementById("webglcanvas");
+        var gl = canvas.getContext("webgl");
+
+        var vertexShaderSource =
+            `attribute vec3 a_coords;
+            attribute vec4 a_color; // Color attribute
+            varying vec4 v_color; // Varying variable to pass color to fragment shader
+            
+            void main() {
+                gl_Position = vec4(a_coords, 1.0);
+                v_color = a_color; // Pass the color to the fragment shader
+            }`;
+
+        var fragmentShaderSource =
+            `precision mediump float;
+            varying vec4 v_color; // Receive the color from the vertex shader
+            
+            void main() {
+                gl_FragColor = v_color; // Set the fragment color
+            }`;
+
+        var vsh = gl.createShader(gl.VERTEX_SHADER);
+        gl.shaderSource(vsh, vertexShaderSource);
+        gl.compileShader(vsh);
+
+        var fsh = gl.createShader(gl.FRAGMENT_SHADER);
+        gl.shaderSource(fsh, fragmentShaderSource);
+        gl.compileShader(fsh);
+
+        var prog = gl.createProgram();
+        gl.attachShader(prog, vsh);
+        gl.attachShader(prog, fsh);
+        gl.linkProgram(prog);
+        gl.useProgram(prog);
+
+        var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+        var a_color_location = gl.getAttribLocation(prog, "a_color");
+
+                var coords = new Float32Array([
+									//bottom middle 3
+										0,-1,0,
+									.15,-.75,0,
+									-.15,-.75,0,
+									
+									0,-1,0,
+									.15,-.75,0,
+									0.3,-1,0,
+									
+									0,-1,0,
+									-.15,-.75,0,
+									-0.3,-1,0,
+									
+					//bottom left-right cornar 4+4
+									.15,-.75,0,
+									0.4,-0.9,0,
+									0.3,-1,0,
+									
+									-.15,-.75,0,
+									-0.4,-0.9,0,
+									-0.3,-1,0,
+									
+									0.15,-.75,0,
+									0.4,-.9,0,
+									0.425,-.75,0,
+									
+									-0.15,-.75,0,
+									-0.4,-.9,0,
+									-0.425,-.75,0,
+									
+									0.15,-.75,0,
+									0.425,-.75,0,
+									0.425,-.6,0,
+									
+									-0.15,-.75,0,
+									-0.425,-.75,0,
+									-0.425,-.6,0,
+									
+									0.15,-.4,0,
+									0.425,-.6,0,
+									0.425,-.25,0,
+									
+									-0.15,-.4,0,
+									-0.425,-.6,0,
+									-0.425,-.25,0,
+					//bottom middle fillers 7
+									0.15,-.75,0,
+									-0.15,-.75,0,
+									0.15,-0.4,0,
+									
+									-0.15,-.4,0,
+									-0.15,-.75,0,
+									0.15,-0.4,0,
+									
+									0,0,0,
+									-.15,-0.4,0,
+									0.15,-0.4,0,
+									
+									0.15,-.75,0,
+									0.425,-.6,0,
+									0.15,-0.4,0,
+									
+									-0.15,-.75,0,
+									-0.425,-.6,0,
+									-0.15,-0.4,0,
+									
+									0.15,-0.4,0,
+									0.425,-0.25,0,
+									0,0,0,
+									
+									-0.15,-0.4,0,
+									-0.425,-0.25,0,
+									0,0,0,
+						//Middle left right 4
+									0.425,-0.25,0,
+									0,0,0,
+									0.425,0.25,0,
+									
+									-0.425,-0.25,0,
+									0,0,0,
+									-0.425,0.25,0,
+									
+									0.425,0.25,0,
+									0,.5,0,
+									0.425,.5,0,
+									
+									-0.425,0.25,0,
+									0,.5,0,
+									-0.425,.5,0,
+						//middle fillers 4
+									0.425,0.25,0,
+									0,0,0,
+									0,0.25,0,
+									
+									-0.425,0.25,0,
+									0,0,0,
+									0,0.25,0,
+									
+									0.425,0.25,0,
+									0,.5,0,
+									0,0.25,0,
+									
+									-0.425,0.25,0,
+									0,.5,0,
+									0,0.25,0,
+						//lower shoulder curve 6
+									0.4,.6,0,
+									0,.5,0,
+									0.425,.5,0,
+									
+									-0.4,.6,0,
+									0,.5,0,
+									-0.425,.5,0,
+									
+									0.4,.6,0,
+									0,.5,0,
+									0.35,.7,0,
+									
+									-0.4,.6,0,
+									0,.5,0,
+									-0.35,.7,0,
+									
+									0.25,.8,0,
+									0,.5,0,
+									0.35,.7,0,
+									
+									-0.25,.8,0,
+									0,.5,0,
+									-0.35,.7,0,
+						//upper shoulder curve 6
+									0.25,.8,0,
+									0,.5,0,
+									0.2,.9,0,
+									
+									-0.25,.8,0,
+									0,.5,0,
+									-0.2,.9,0,
+									
+									0.18,.95,0,
+									0,.5,0,
+									0.2,.9,0,
+									
+									-0.18,.95,0,
+									0,.5,0,
+									-0.2,.9,0,
+									
+									0.18,.95,0,
+									0,.5,0,
+									0.15,1.1,0,
+									
+									-0.18,.95,0,
+									0,.5,0,
+									-0.15,1.1,0,
+							//shoulder fillers 5
+									0,.5,0,
+									0.15,1.1,0,
+									-0.15,1.1,0,
+									
+									0.15,1.1,0,
+									-0.15,1.1,0,
+									0,1.4,0,
+									
+									0.15,1.1,0,
+									0,1.4,0,
+									0.15,1.7,0,
+									
+									-0.15,1.1,0,
+									0,1.4,0,
+									-0.15,1.7,0,
+									
+									0,1.4,0,
+									-0.15,1.7,0,
+									0.15,1.7,0,
+									
+							//star shape 
+							//1 star = 9 verices
+									0.675,0,0,
+									0.825,0,0,
+									0.75,-0.075,0,
+									
+									0.75,0.075,0,
+									0.75,-0.075,0,
+									0.705,-0.12,0,
+									
+									0.75,0.075,0,
+									0.75,-0.075,0,
+									0.81,-0.12,0,
+									
+									0.675+.2,0+.2,0,
+									0.825+.2,0+.2,0,
+									0.75+.2,-0.075+.2,0,
+									
+									0.75+.2,0.075+.2,0,
+									0.75+.2,-0.075+.2,0,
+									0.705+.2,-0.12+.2,0,
+									
+									0.75+.2,0.075+.2,0,
+									0.75+.2,-0.075+.2,0,
+									0.81+.2,-0.12+.2,0,
+									
+									-0.675,0,0,
+									-0.825,0,0,
+									-0.75,-0.075,0,
+									
+									-0.75,0.075,0,
+									-0.75,-0.075,0,
+									-0.705,-0.12,0,
+									
+									-0.75,0.075,0,
+									-0.75,-0.075,0,
+									-0.81,-0.12,0,
+									
+									-0.675+.2,0+.2,0,
+									-0.825+.2,0+.2,0,
+									-0.75+.2,-0.075+.2,0,
+									
+									-0.75+.2,0.075+.2,0,
+									-0.75+.2,-0.075+.2,0,
+									-0.705+.2,-0.12+.2,0,
+									
+									-0.75+.2,0.075+.2,0,
+									-0.75+.2,-0.075+.2,0,
+									-0.81+.2,-0.12+.2,0,
+									
+									//2nd
+									0.675-0.2,0+0.5,0,
+									0.825-0.2,0+0.5,0,
+									0.75-0.2,-0.075+0.5,0,
+									
+									0.75-0.2,0.075+0.5,0,
+									0.75-0.2,-0.075+0.5,0,
+									0.705-0.2,-0.12+0.5,0,
+									
+									0.75-0.2,0.075+0.5,0,
+									0.75-0.2,-0.075+0.5,0,
+									0.81-0.2,-0.12+0.5,0,
+									
+									0.675,0+.7,0,
+									0.825,0+.7,0,
+									0.75,-0.075+.7,0,
+									
+									0.75,0.075+.7,0,
+									0.75,-0.075+.7,0,
+									0.705,-0.12+.7,0,
+									
+									0.75,0.075+.7,0,
+									0.75,-0.075+.7,0,
+									0.81,-0.12+.7,0,
+									
+									-0.675-0.2,0+0.5,0,
+									-0.825-0.2,0+0.5,0,
+									-0.75-0.2,-0.075+0.5,0,
+									
+									-0.75-0.2,0.075+0.5,0,
+									-0.75-0.2,-0.075+0.5,0,
+									-0.705-0.2,-0.12+0.5,0,
+									
+									-0.75-0.2,0.075+0.5,0,
+									-0.75-0.2,-0.075+0.5,0,
+									-0.81-0.2,-0.12+0.5,0,
+									
+									-0.675,0+.7,0,
+									-0.825,0+.7,0,
+									-0.75,-0.075+.7,0,
+									
+									-0.75,0.075+.7,0,
+									-0.75,-0.075+.7,0,
+									-0.705,-0.12+.7,0,
+									
+									-0.75,0.075+.7,0,
+									-0.75,-0.075+.7,0,
+									-0.81,-0.12+.7,0,
+									
+        ].map((value, index) => index % 3 === 1 ? (value / 1.5) - 0.2 : value / 1.5));
+
+
+        // Helper function to repeat a color pattern
+        function repeatColor(color, repetitions) {
+            return Array.from({ length: repetitions }, () => [...color]).flat();
+        }
+
+        // Use the same color for all vertices
+        var baseColor = [1.0, 0.0, 0.0, 1.0]; // bottle color
+		var baseColor1 = [0.95, 1.0, 0.2, 1.0,]; // star color
+		
+        var colors = new Float32Array([
+            // Use the same color for the bottole
+            ...repeatColor(baseColor, 129),
+			// Use the same color for the stars
+			...repeatColor(baseColor1, 72),
+        ]);
+
+        var a_coords_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);
+        gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_coords_location);
+
+        var a_color_buffer = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, a_color_buffer);
+        gl.bufferData(gl.ARRAY_BUFFER, colors, gl.STATIC_DRAW);
+        gl.vertexAttribPointer(a_color_location, 4, gl.FLOAT, false, 0, 0);
+        gl.enableVertexAttribArray(a_color_location);
+
+        gl.clearColor(0.1, 0.898, 1, 1.0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.drawArrays(gl.TRIANGLES, 0, coords.length / 3);
+    </script>
+</body>
+</html>
